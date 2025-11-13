@@ -4,8 +4,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
+import { CartScreen } from "../screens/CartScreen";
 import { LoginScreen } from "../screens/LoginScreen";
 import { ProductsScreen } from "../screens/ProductsScreen";
+import { ProfileScreen } from "../screens/ProfileScreen";
 import { RegisterScreen } from "../screens/RegisterScreen";
 
 import { getLoginState } from "../utils/storage";
@@ -49,6 +51,10 @@ const MainTabs = () => {
 
           if (route.name === "Products") {
             iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "Cart") {
+            iconName = focused ? "cart" : "cart-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -68,6 +74,16 @@ const MainTabs = () => {
         name="Products"
         component={ProductsScreen}
         options={{ title: "Products" }}
+      />
+      <Tab.Screen
+        name="Cart"
+        component={CartScreen}
+        options={{ title: "Shopping Cart" }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ title: "My Profile" }}
       />
     </Tab.Navigator>
   );
