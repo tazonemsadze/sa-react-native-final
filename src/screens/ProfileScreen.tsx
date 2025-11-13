@@ -12,7 +12,7 @@ import {
 import { User } from "../types";
 import { clearStorage, getUser } from "../utils/storage";
 
-export const ProfileScreen = ({ navigation }: any) => {
+export const ProfileScreen = ({ navigation, onLogout }: any) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -36,6 +36,10 @@ export const ProfileScreen = ({ navigation }: any) => {
         onPress: async () => {
           await clearStorage();
           Alert.alert("Success", "You have been logged out.");
+
+          if (onLogout) {
+            onLogout();
+          }
         },
       },
     ]);
@@ -97,10 +101,6 @@ export const ProfileScreen = ({ navigation }: any) => {
           <Ionicons name="log-out-outline" size={24} color="#fff" />
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Shopping App v1.0</Text>
-        </View>
       </View>
     </ScrollView>
   );
@@ -201,13 +201,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginLeft: 10,
-  },
-  footer: {
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-  footerText: {
-    fontSize: 14,
-    color: "#999",
   },
 });

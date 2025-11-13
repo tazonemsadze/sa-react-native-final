@@ -106,9 +106,9 @@ export const LoginScreen = ({ navigation, onLoginSuccess }: any) => {
             </View>
           ) : testUser ? (
             <View style={styles.testCredentials}>
-              <Text style={styles.testTitle}>🔑 Test Credentials:</Text>
-              <Text style={styles.testText}>Email: {testUser.email}</Text>
-              <Text style={styles.testText}>Password: test123</Text>
+              <Text style={styles.testTitle}>Test:</Text>
+              <Text style={styles.testText}>{testUser.email}</Text>
+              <Text style={styles.testText}>test123</Text>
             </View>
           ) : null}
 
@@ -254,12 +254,6 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 4,
     fontFamily: Platform.OS === "ios" ? "Courier" : "monospace",
-  },
-  testNote: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 8,
-    fontStyle: "italic",
   },
   loadingText: {
     fontSize: 14,

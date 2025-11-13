@@ -46,7 +46,6 @@ export const RegisterScreen = ({ navigation }: any) => {
 
   const pickImage = async () => {
     try {
-      // Request permission
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 

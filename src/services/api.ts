@@ -22,3 +22,13 @@ export const fetchProductById = async (id: number): Promise<Product> => {
     throw error;
   }
 };
+
+export const fetchUser = async (userId: number = 1): Promise<any> => {
+  try {
+    const response = await axios.get(`${BASE_URL}/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    throw error;
+  }
+};
