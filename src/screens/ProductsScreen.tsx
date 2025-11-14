@@ -1,5 +1,4 @@
-// FILE: src/screens/ProductsScreen.tsx
-// UPDATED - Fixed export and added navigation
+
 
 import React, { useEffect, useState } from "react";
 import {
