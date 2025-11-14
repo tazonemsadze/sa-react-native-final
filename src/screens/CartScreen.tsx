@@ -1,5 +1,9 @@
+// FILE: src/screens/CartScreen.tsx
+// UPDATED - Fixed export
+
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
+import React from "react";
 import {
   Alert,
   FlatList,
@@ -8,151 +12,115 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { CartItem } from "../components/CartItem";
-import { CartItem as CartItemType } from "../types";
-import { getCart, saveCart } from "../utils/storage";
+import CartItem from "../components/CartItem";
+import { useCart } from "../context/CartContext";
 
-export const CartScreen = () => {
-  const [cart, setCart] = useState<CartItemType[]>([]);
-  const [totalPrice, setTotalPrice] = useState(0);
+const CartScreen = () => {
+  const { cart, updateQuantity, removeFromCart, getTotalItems, getTotalPrice } =
+    useCart();
 
   useFocusEffect(
-    useCallback(() => {
-      loadCart();
+    React.useCallback(() => {
+      // Refresh when screen is focused
     }, [])
   );
 
-  const loadCart = async () => {
-    const cartData = await getCart();
-    setCart(cartData);
-    calculateTotal(cartData);
+  const handleIncrease = async (item: any) => {
+    try {
+      await updateQuantity(item.product.id, item.quantity + 1);
+    } catch {
+      Alert.alert("Error", "Failed to update quantity.");
+    }
   };
 
-  const calculateTotal = (cartData: CartItemType[]) => {
-    const total = cartData.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
-      0
-    );
-    setTotalPrice(total);
-  };
-
-  const handleIncrease = async (productId: number) => {
-    const updatedCart = cart.map((item) => {
-      if (item.product.id === productId && item.quantity < 10) {
-        return { ...item, quantity: item.quantity + 1 };
+  const handleDecrease = async (item: any) => {
+    try {
+      if (item.quantity === 1) {
+        Alert.alert(
+          "Remove Item",
+          "Do you want to remove this item from cart?",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Remove",
+              style: "destructive",
+              onPress: () => handleRemove(item),
+            },
+          ]
+        );
+      } else {
+        await updateQuantity(item.product.id, item.quantity - 1);
       }
-      return item;
-    });
-
-    setCart(updatedCart);
-    calculateTotal(updatedCart);
-    await saveCart(updatedCart);
+    } catch {
+      Alert.alert("Error", "Failed to update quantity.");
+    }
   };
 
-  const handleDecrease = async (productId: number) => {
-    const updatedCart = cart.map((item) => {
-      if (item.product.id === productId && item.quantity > 1) {
-        return { ...item, quantity: item.quantity - 1 };
-      }
-      return item;
-    });
-
-    setCart(updatedCart);
-    calculateTotal(updatedCart);
-    await saveCart(updatedCart);
+  const handleRemove = async (item: any) => {
+    try {
+      await removeFromCart(item.product.id);
+      Alert.alert("Success", "Item removed from cart.");
+    } catch {
+      Alert.alert("Error", "Failed to remove item.");
+    }
   };
 
-  const handleRemove = async (productId: number) => {
-    Alert.alert(
-      "Remove Item",
-      "Are you sure you want to remove this item from cart?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: async () => {
-            const updatedCart = cart.filter(
-              (item) => item.product.id !== productId
-            );
-            setCart(updatedCart);
-            calculateTotal(updatedCart);
-            await saveCart(updatedCart);
-          },
-        },
-      ]
-    );
-  };
+  const renderCartItem = ({ item }: any) => (
+    <CartItem
+      item={item}
+      onIncrease={handleIncrease}
+      onDecrease={handleDecrease}
+      onRemove={handleRemove}
+    />
+  );
 
-  const handleClearCart = () => {
-    Alert.alert(
-      "Clear Cart",
-      "Are you sure you want to remove all items from cart?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Clear",
-          style: "destructive",
-          onPress: async () => {
-            setCart([]);
-            setTotalPrice(0);
-            await saveCart([]);
-          },
-        },
-      ]
-    );
-  };
-
-  if (cart.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>Your cart is empty</Text>
-        <Text style={styles.emptySubtext}>
-          Add some products to get started!
-        </Text>
-      </View>
-    );
-  }
+  const renderEmptyCart = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="cart-outline" size={80} color="#CCC" />
+      <Text style={styles.emptyTitle}>Your cart is empty</Text>
+      <Text style={styles.emptyText}>Add some products to get started!</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Shopping Cart</Text>
+        <Text style={styles.headerSubtitle}>
+          {getTotalItems()} {getTotalItems() === 1 ? "item" : "items"}
+        </Text>
+      </View>
+
       <FlatList
         data={cart}
-        keyExtractor={(item) => item.product.id.toString()}
-        renderItem={({ item }) => (
-          <CartItem
-            item={item}
-            onIncrease={() => handleIncrease(item.product.id)}
-            onDecrease={() => handleDecrease(item.product.id)}
-            onRemove={() => handleRemove(item.product.id)}
-          />
-        )}
-        contentContainerStyle={styles.listContent}
+        renderItem={renderCartItem}
+        keyExtractor={(item: any) => item.product.id.toString()}
+        contentContainerStyle={[
+          styles.listContent,
+          cart.length === 0 && styles.emptyList,
+        ]}
+        ListEmptyComponent={renderEmptyCart}
         showsVerticalScrollIndicator={false}
       />
 
-      <View style={styles.summaryContainer}>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Total Items:</Text>
-          <Text style={styles.summaryValue}>
-            {cart.reduce((sum, item) => sum + item.quantity, 0)}
-          </Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.totalLabel}>Total Price:</Text>
-          <Text style={styles.totalValue}>${totalPrice.toFixed(2)}</Text>
-        </View>
+      {cart.length > 0 && (
+        <View style={styles.footer}>
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalLabel}>Total:</Text>
+            <Text style={styles.totalPrice}>${getTotalPrice()}</Text>
+          </View>
 
-        <TouchableOpacity style={styles.clearButton} onPress={handleClearCart}>
-          <Text style={styles.clearButtonText}>Clear Cart</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.checkoutButton}
+            onPress={() =>
+              Alert.alert("Success", "Checkout feature coming soon!")
+            }
+          >
+            <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -160,78 +128,96 @@ export const CartScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F5F5F5",
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
+  header: {
+    backgroundColor: "#FFFFFF",
     padding: 20,
+    paddingTop: 60,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  emptyText: {
-    fontSize: 22,
+  headerTitle: {
+    fontSize: 28,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 10,
   },
-  emptySubtext: {
-    fontSize: 16,
+  headerSubtitle: {
+    fontSize: 14,
     color: "#666",
+    marginTop: 4,
   },
   listContent: {
     padding: 15,
     paddingBottom: 100,
   },
-  summaryContainer: {
+  emptyList: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 40,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    marginTop: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+    marginTop: 8,
+  },
+  footer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    paddingBottom: 30,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 5,
   },
-  summaryRow: {
+  totalContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  summaryLabel: {
-    fontSize: 16,
-    color: "#666",
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    alignItems: "center",
+    marginBottom: 15,
   },
   totalLabel: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
     color: "#333",
   },
-  totalValue: {
-    fontSize: 20,
+  totalPrice: {
+    fontSize: 24,
     fontWeight: "bold",
     color: "#007AFF",
   },
-  clearButton: {
-    backgroundColor: "#FF3B30",
-    padding: 14,
-    borderRadius: 8,
+  checkoutButton: {
+    backgroundColor: "#007AFF",
+    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 15,
+    height: 50,
+    borderRadius: 10,
   },
-  clearButtonText: {
-    color: "#fff",
-    fontSize: 16,
+  checkoutButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
     fontWeight: "600",
+    marginRight: 10,
   },
 });
+
+export default CartScreen;

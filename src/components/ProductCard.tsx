@@ -1,27 +1,39 @@
+// FILE: src/components/ProductCard.tsx
+// UPDATED - Added clickable image
+
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Product } from "../types";
 
 interface ProductCardProps {
-  product: Product;
-  onAddToCart: () => void;
+  product: any;
+  onAddToCart: (product: any) => void;
+  onPress: () => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
-  product,
-  onAddToCart,
-}) => {
+const ProductCard = ({ product, onAddToCart, onPress }: ProductCardProps) => {
   return (
     <View style={styles.card}>
-      <Image source={{ uri: product.image }} style={styles.image} />
-      <View style={styles.info}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        <Image source={{ uri: product.image }} style={styles.image} />
+      </TouchableOpacity>
+
+      <View style={styles.details}>
         <Text style={styles.title} numberOfLines={2}>
           {product.title}
         </Text>
-        <Text style={styles.price}>${product.price.toFixed(2)}</Text>
-        <TouchableOpacity style={styles.button} onPress={onAddToCart}>
-          <Text style={styles.buttonText}>Add to Cart</Text>
-        </TouchableOpacity>
+
+        <Text style={styles.category}>{product.category}</Text>
+
+        <View style={styles.footer}>
+          <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => onAddToCart(product)}
+          >
+            <Ionicons name="cart-outline" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -29,10 +41,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
     marginBottom: 15,
+    marginHorizontal: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -41,32 +54,47 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 200,
+    height: 150,
     resizeMode: "contain",
-    marginBottom: 10,
+    backgroundColor: "#F9F9F9",
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    padding: 10,
   },
-  info: {
-    gap: 8,
+  details: {
+    padding: 12,
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
     color: "#333",
+    marginBottom: 4,
+    minHeight: 40,
+  },
+  category: {
+    fontSize: 12,
+    color: "#999",
+    marginBottom: 8,
+    textTransform: "capitalize",
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   price: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#007AFF",
   },
-  button: {
+  addButton: {
     backgroundColor: "#007AFF",
-    padding: 12,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
     alignItems: "center",
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
 });
+
+export default ProductCard;

@@ -21,7 +21,7 @@ import { RegisterFormData, User } from "../types";
 import { saveLoginState, saveUser } from "../utils/storage";
 import { registerSchema } from "../utils/validationSchemas";
 
-export const RegisterScreen = ({ navigation }: any) => {
+const RegisterScreen = ({ navigation }: any) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [imageUri, setImageUri] = useState<string>("");
@@ -33,7 +33,7 @@ export const RegisterScreen = ({ navigation }: any) => {
     setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: yupResolver(registerSchema),
+    resolver: yupResolver(registerSchema) as any,
     defaultValues: {
       fullName: "",
       email: "",
@@ -68,7 +68,7 @@ export const RegisterScreen = ({ navigation }: any) => {
         setImageUri(result.assets[0].uri);
         setValue("imageUri", result.assets[0].uri);
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to pick image. Please try again.");
     }
   };
@@ -107,7 +107,7 @@ export const RegisterScreen = ({ navigation }: any) => {
       } else {
         Alert.alert("Error", "Could not get address from location.");
       }
-    } catch (error) {
+    } catch {
       Alert.alert(
         "Error",
         "Failed to get location. Please enter address manually."
@@ -136,7 +136,7 @@ export const RegisterScreen = ({ navigation }: any) => {
           onPress: () => navigation.replace("Login"),
         },
       ]);
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Registration failed. Please try again.");
     }
   };
@@ -488,3 +488,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+export default RegisterScreen;

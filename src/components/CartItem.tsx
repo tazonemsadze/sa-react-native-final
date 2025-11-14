@@ -4,12 +4,12 @@ import { CartItem as CartItemType } from "../types";
 
 interface CartItemProps {
   item: CartItemType;
-  onIncrease: () => void;
-  onDecrease: () => void;
-  onRemove: () => void;
+  onIncrease: (item: CartItemType) => void;
+  onDecrease: (item: CartItemType) => void;
+  onRemove: (item: CartItemType) => void;
 }
 
-export const CartItem: React.FC<CartItemProps> = ({
+const CartItem: React.FC<CartItemProps> = ({
   item,
   onIncrease,
   onDecrease,
@@ -31,7 +31,7 @@ export const CartItem: React.FC<CartItemProps> = ({
           <View style={styles.quantityContainer}>
             <TouchableOpacity
               style={styles.quantityButton}
-              onPress={onDecrease}
+              onPress={() => onDecrease(item)}
               disabled={item.quantity <= 1}
             >
               <Text style={styles.quantityButtonText}>-</Text>
@@ -39,14 +39,14 @@ export const CartItem: React.FC<CartItemProps> = ({
             <Text style={styles.quantity}>{item.quantity}</Text>
             <TouchableOpacity
               style={styles.quantityButton}
-              onPress={onIncrease}
+              onPress={() => onIncrease(item)}
               disabled={item.quantity >= 10}
             >
               <Text style={styles.quantityButtonText}>+</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.removeButton} onPress={onRemove}>
+          <TouchableOpacity style={styles.removeButton} onPress={() => onRemove(item)}>
             <Text style={styles.removeButtonText}>Remove</Text>
           </TouchableOpacity>
         </View>
@@ -136,3 +136,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+export default CartItem;

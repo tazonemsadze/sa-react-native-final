@@ -1,110 +1,97 @@
+// FILE: src/screens/ProductsScreen.tsx
+// UPDATED - Fixed export and added navigation
+
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { ProductCard } from "../components/ProductCard";
+import ProductCard from "../components/ProductCard";
 import { fetchProducts } from "../services/api";
-import { CartItem, Product } from "../types";
-import { getCart, saveCart } from "../utils/storage";
+import { Product } from "../types";
+import { useCart } from "../context/CartContext";
 
-export const ProductsScreen = () => {
+const ProductsScreen = ({ navigation }: any) => {
+  const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     loadProducts();
-    loadCart();
   }, []);
 
   const loadProducts = async () => {
     try {
-      setLoading(true);
       const data = await fetchProducts();
       setProducts(data);
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to load products. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
-  const loadCart = async () => {
-    const cartData = await getCart();
-    setCart(cartData);
+  const onRefresh = () => {
+    setIsRefreshing(true);
+    loadProducts();
   };
 
-  const handleAddToCart = async (product: Product) => {
+  const handleAddToCart = async (product: any) => {
     try {
-      const existingItemIndex = cart.findIndex(
-        (item) => item.product.id === product.id
-      );
-
-      let updatedCart: CartItem[];
-
-      if (existingItemIndex !== -1) {
-        updatedCart = [...cart];
-        if (updatedCart[existingItemIndex].quantity < 10) {
-          updatedCart[existingItemIndex].quantity += 1;
-          Alert.alert("Success", "Product quantity increased in cart!");
-        } else {
-          Alert.alert(
-            "Limit Reached",
-            "Maximum quantity (10) reached for this product."
-          );
-          return;
-        }
-      } else {
-        const newCartItem: CartItem = {
-          product,
-          quantity: 1,
-        };
-        updatedCart = [...cart, newCartItem];
-        Alert.alert("Success", "Product added to cart!");
-      }
-
-      setCart(updatedCart);
-      await saveCart(updatedCart);
-    } catch (error) {
+      await addToCart(product, 1);
+      Alert.alert("Success", "Product added to cart!");
+    } catch {
       Alert.alert("Error", "Failed to add product to cart.");
     }
   };
 
-  if (loading) {
+  const renderProduct = ({ item }: any) => (
+    <ProductCard
+      product={item}
+      onAddToCart={handleAddToCart}
+      onPress={() => navigation.navigate("ProductDetails", { product: item })}
+    />
+  );
+
+  if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
         <Text style={styles.loadingText}>Loading products...</Text>
       </View>
     );
   }
 
-  if (products.length === 0) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>No products available</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Products</Text>
+        <Text style={styles.headerSubtitle}>
+          {products.length} items available
+        </Text>
+      </View>
+
       <FlatList
         data={products}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <ProductCard
-            product={item}
-            onAddToCart={() => handleAddToCart(item)}
-          />
-        )}
+        renderItem={renderProduct}
+        keyExtractor={(item: any) => item.id.toString()}
+        numColumns={2}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={["#007AFF"]}
+          />
+        }
       />
     </View>
   );
@@ -113,24 +100,43 @@ export const ProductsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F5F5F5",
   },
-  centerContainer: {
+  loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F5F5F5",
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
     color: "#666",
   },
-  emptyText: {
-    fontSize: 18,
+  header: {
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    paddingTop: 60,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  headerSubtitle: {
+    fontSize: 14,
     color: "#666",
+    marginTop: 4,
   },
   listContent: {
-    padding: 15,
+    padding: 10,
+    paddingTop: 15,
   },
 });
+
+export default ProductsScreen;

@@ -31,7 +31,7 @@ export interface CartItem {
 export interface LoginFormData {
   email: string;
   password: string;
-  rememberMe: boolean;
+  rememberMe?: boolean;
 }
 
 // Register form data tpes

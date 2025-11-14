@@ -19,7 +19,8 @@ import { LoginFormData, User } from "../types";
 import { saveLoginState, saveRememberMe, saveUser } from "../utils/storage";
 import { loginSchema } from "../utils/validationSchemas";
 
-export const LoginScreen = ({ navigation, onLoginSuccess }: any) => {
+const LoginScreen = ({ navigation, route }: any) => {
+  const { onLogin } = route.params;
   const [showPassword, setShowPassword] = useState(false);
   const [testUser, setTestUser] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -30,7 +31,7 @@ export const LoginScreen = ({ navigation, onLoginSuccess }: any) => {
     setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
-    resolver: yupResolver(loginSchema),
+    resolver: yupResolver(loginSchema) as any,
     defaultValues: {
       email: "",
       password: "",
@@ -39,22 +40,21 @@ export const LoginScreen = ({ navigation, onLoginSuccess }: any) => {
   });
 
   useEffect(() => {
+    const loadTestUser = async () => {
+      try {
+        setLoadingUser(true);
+        const user = await fetchUser(1);
+        setTestUser(user);
+        setValue("email", user.email);
+        setValue("password", "test123");
+      } catch {
+        console.error("Failed to load test user");
+      } finally {
+        setLoadingUser(false);
+      }
+    };
     loadTestUser();
-  }, []);
-
-  const loadTestUser = async () => {
-    try {
-      setLoadingUser(true);
-      const user = await fetchUser(1);
-      setTestUser(user);
-      setValue("email", user.email);
-      setValue("password", "test123");
-    } catch (error) {
-      console.error("Failed to load test user");
-    } finally {
-      setLoadingUser(false);
-    }
-  };
+  }, [setValue]);
 
   const onSubmit = async (data: LoginFormData) => {
     if (
@@ -72,12 +72,12 @@ export const LoginScreen = ({ navigation, onLoginSuccess }: any) => {
 
       await saveUser(newUser);
       await saveLoginState(true);
-      await saveRememberMe(data.rememberMe);
+      await saveRememberMe(data.rememberMe || false);
 
       Alert.alert("Success", "Login successful!");
 
-      if (onLoginSuccess) {
-        onLoginSuccess();
+      if (onLogin) {
+        onLogin();
       }
     } else {
       Alert.alert(
@@ -346,3 +346,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+export default LoginScreen;
