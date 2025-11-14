@@ -1,5 +1,4 @@
-// FILE: src/screens/ProductDetailsScreen.tsx
-// NEW FILE - Product Details Screen
+
 
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
