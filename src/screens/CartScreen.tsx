@@ -1,5 +1,4 @@
-// FILE: src/screens/CartScreen.tsx
-// UPDATED - Fixed export
+
 
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
