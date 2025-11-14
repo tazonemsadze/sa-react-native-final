@@ -1,5 +1,4 @@
-// FILE: src/navigation/AppNavigator.tsx
-// UPDATED FILE - Added CartProvider and cart badge
+
 
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationIndependentTree } from "@react-navigation/native";
