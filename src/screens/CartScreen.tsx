@@ -20,7 +20,6 @@ const CartScreen = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      // Refresh when screen is focused
     }, [])
   );
 
