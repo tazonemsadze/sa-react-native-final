@@ -1,5 +1,4 @@
-// FILE: src/components/ProductCard.tsx
-// UPDATED - Added clickable image
+
 
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
