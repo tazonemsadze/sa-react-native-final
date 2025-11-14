@@ -1,5 +1,4 @@
-// FILE: src/navigation/AuthNavigator.tsx
-// NEW FILE - Authentication Navigator with NavigationIndependentTree
+
 
 import { NavigationIndependentTree } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
